@@ -341,6 +341,22 @@ function WorkspaceInitialPage({policyDraft, policy: policyProp, route}: Workspac
         };
     }, [policy]);
 
+    const onBackButtonPress = () => {
+        const outerBackTo = route.params?.backTo;
+        if (outerBackTo) {
+            // Parse the outer backTo value to extract the inner backTo
+            const urlParams = new URLSearchParams(outerBackTo.split('?')[1]);
+            const nestedBackTo = urlParams.get('backTo');
+            // navigating to nested backTo to open currency switcher where it was previously opened
+            if (nestedBackTo) {
+                Navigation.isNavigationReady().then(() => Navigation.navigate(nestedBackTo as Route));
+            }
+            Navigation.isNavigationReady().then(() => Navigation.navigate(outerBackTo as Route));
+        } else {
+            Navigation.dismissModal();
+        }
+    }
+
     return (
         <ScreenWrapper
             testID={WorkspaceInitialPage.displayName}
@@ -354,14 +370,7 @@ function WorkspaceInitialPage({policyDraft, policy: policyProp, route}: Workspac
             >
                 <HeaderWithBackButton
                     title={policyName}
-                    onBackButtonPress={() => {
-                        if (route.params?.backTo) {
-                            Navigation.resetToHome();
-                            Navigation.isNavigationReady().then(() => Navigation.navigate(route.params?.backTo as Route));
-                        } else {
-                            Navigation.dismissModal();
-                        }
-                    }}
+                    onBackButtonPress={onBackButtonPress}
                     policyAvatar={policyAvatar}
                     style={styles.headerBarDesktopHeight}
                 />

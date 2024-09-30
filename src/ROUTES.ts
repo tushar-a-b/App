@@ -107,7 +107,10 @@ const ROUTES = {
         route: 'bank-account/:stepToOpen?',
         getRoute: (stepToOpen = '', policyID = '', backTo?: string) => getUrlWithBackToParam(`bank-account/${stepToOpen}?policyID=${policyID}`, backTo),
     },
-    WORKSPACE_SWITCHER: 'workspace-switcher',
+    WORKSPACE_SWITCHER: {
+        route: 'workspace-switcher',
+        getRoute: (backTo?: string) => `${getUrlWithBackToParam('workspace-switcher', backTo)}` as const,
+    },
     SETTINGS: 'settings',
     SETTINGS_PROFILE: 'settings/profile',
     SETTINGS_CHANGE_CURRENCY: 'settings/add-payment-card/change-currency',

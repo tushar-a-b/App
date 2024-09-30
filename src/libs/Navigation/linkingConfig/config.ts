@@ -78,7 +78,7 @@ const config: LinkingOptions<RootStackParamList>['config'] = {
             screens: {
                 [SCREENS.LEFT_MODAL.CHAT_FINDER]: ROUTES.CHAT_FINDER,
                 [SCREENS.LEFT_MODAL.WORKSPACE_SWITCHER]: {
-                    path: ROUTES.WORKSPACE_SWITCHER,
+                    path: ROUTES.WORKSPACE_SWITCHER.route,
                 },
             },
         },

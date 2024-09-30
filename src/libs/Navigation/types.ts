@@ -1234,7 +1234,9 @@ type TransactionDuplicateNavigatorParamList = {
 
 type LeftModalNavigatorParamList = {
     [SCREENS.LEFT_MODAL.CHAT_FINDER]: undefined;
-    [SCREENS.LEFT_MODAL.WORKSPACE_SWITCHER]: undefined;
+    [SCREENS.LEFT_MODAL.WORKSPACE_SWITCHER]: {
+        backTo?: Routes;
+    };
 };
 
 type RightModalNavigatorParamList = {

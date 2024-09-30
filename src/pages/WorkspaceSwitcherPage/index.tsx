@@ -25,6 +25,7 @@ import ONYXKEYS from '@src/ONYXKEYS';
 import {isEmptyObject} from '@src/types/utils/EmptyObject';
 import WorkspaceCardCreateAWorkspace from './WorkspaceCardCreateAWorkspace';
 import WorkspacesSectionHeader from './WorkspacesSectionHeader';
+import {useRoute} from '@react-navigation/native';
 
 type WorkspaceListItem = {
     text: string;
@@ -42,6 +43,7 @@ function WorkspaceSwitcherPage() {
     const [searchTerm, debouncedSearchTerm, setSearchTerm] = useDebouncedState('');
     const {translate} = useLocalize();
     const {activeWorkspaceID, setActiveWorkspaceID} = useActiveWorkspace();
+    const route = useRoute();
 
     const [reports] = useOnyx(ONYXKEYS.COLLECTION.REPORT);
     const [reportActions] = useOnyx(ONYXKEYS.COLLECTION.REPORT_ACTIONS);

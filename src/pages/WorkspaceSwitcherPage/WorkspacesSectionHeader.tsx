@@ -33,7 +33,7 @@ function WorkspacesSectionHeader() {
                     accessibilityLabel={translate('workspace.new.newWorkspace')}
                     role={CONST.ROLE.BUTTON}
                     onPress={() => {
-                        const activeRoute = Navigation.getActiveRouteWithoutParams();
+                        const activeRoute = Navigation.getActiveRoute();
                         interceptAnonymousUser(() => App.createWorkspaceWithPolicyDraftAndNavigateToIt('', '', false, false, activeRoute));
                     }}
                 >

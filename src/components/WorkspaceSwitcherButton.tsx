@@ -50,7 +50,8 @@ function WorkspaceSwitcherButton({policy}: WorkspaceSwitcherButtonProps) {
                 onPress={() => {
                     pressableRef?.current?.blur();
                     interceptAnonymousUser(() => {
-                        Navigation.navigate(ROUTES.WORKSPACE_SWITCHER);
+                        const activeRoute = Navigation.getActiveRoute();
+                        Navigation.navigate(ROUTES.WORKSPACE_SWITCHER.getRoute(activeRoute));
                     });
                 }}
             >
