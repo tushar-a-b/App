@@ -584,6 +584,9 @@ type BaseSelectionListProps<TItem extends ListItem> = Partial<ChildrenProps> & {
 
     /** Additional styles to apply to scrollable content */
     contentContainerStyle?: StyleProp<ViewStyle>;
+    
+    /** type of search from search page */
+    searchType?: string;
 } & TRightHandSideComponent<TItem>;
 
 type SelectionListHandle = {

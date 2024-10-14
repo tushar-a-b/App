@@ -105,6 +105,7 @@ function BaseSelectionList<TItem extends ListItem>(
         shouldIgnoreFocus = false,
         scrollEventThrottle,
         contentContainerStyle,
+        searchType,
     }: BaseSelectionListProps<TItem>,
     ref: ForwardedRef<SelectionListHandle>,
 ) {
@@ -124,6 +125,7 @@ function BaseSelectionList<TItem extends ListItem>(
     const [currentPage, setCurrentPage] = useState(1);
     const isTextInputFocusedRef = useRef<boolean>(false);
     const {singleExecution} = useSingleExecution();
+    const [itemHeights, setItemHeights] = useState<{[key: string]: number}>({});
 
     const incrementPage = () => setCurrentPage((prev) => prev + 1);
 
@@ -149,7 +151,7 @@ function BaseSelectionList<TItem extends ListItem>(
         const selectedOptions: TItem[] = [];
 
         sections.forEach((section, sectionIndex) => {
-            const sectionHeaderHeight = variables.optionsListSectionHeaderHeight;
+            const sectionHeaderHeight = !!section.CustomSectionHeader || !!section.title ? variables.optionsListSectionHeaderHeight : 0;
             itemLayouts.push({length: sectionHeaderHeight, offset});
             offset += sectionHeaderHeight;
 
@@ -173,7 +175,7 @@ function BaseSelectionList<TItem extends ListItem>(
                 disabledIndex += 1;
 
                 // Account for the height of the item in getItemLayout
-                const fullItemHeight = getItemHeight(item);
+                const fullItemHeight = item?.keyForList && itemHeights[item.keyForList] ? itemHeights[item.keyForList] : getItemHeight(item);
                 itemLayouts.push({length: fullItemHeight, offset});
                 offset += fullItemHeight;
 
@@ -205,7 +207,7 @@ function BaseSelectionList<TItem extends ListItem>(
             itemLayouts,
             allSelected: selectedOptions.length > 0 && selectedOptions.length === allOptions.length - disabledOptionsIndexes.length,
         };
-    }, [canSelectMultiple, sections, customListHeader, customListHeaderHeight, getItemHeight]);
+    }, [canSelectMultiple, sections, customListHeader, customListHeaderHeight, getItemHeight, itemHeights]);
 
     const [slicedSections, ShowMoreButtonInstance] = useMemo(() => {
         let remainingOptionsLimit = CONST.MAX_SELECTION_LIST_PAGE_LENGTH * currentPage;
@@ -255,8 +257,20 @@ function BaseSelectionList<TItem extends ListItem>(
 
             const itemIndex = item.index ?? -1;
             const sectionIndex = item.sectionIndex ?? -1;
+            let viewOffsetToKeepFocusedItemInView = 0;
 
-            listRef.current.scrollToLocation({sectionIndex, itemIndex, animated, viewOffset: variables.contentHeaderHeight});
+            // Since there are always two items above the focused item in viewable area, and items can grow beyond the screen size
+            // in searchType chat, the focused item may move out of view. To prevent this, we will ensure that the focused item remains at
+            // the top of the viewable area at all times by adjusting the viewOffset.
+            if (searchType === 'chat') {
+                const firstPreviousItem = flattenedSections.allOptions[index - 1] ?? undefined;
+                const firstPreviousItemHeight = firstPreviousItem && firstPreviousItem.keyForList ? itemHeights[firstPreviousItem.keyForList] : 0;
+                const secondPreviousItem = flattenedSections.allOptions[index - 2] ?? undefined;
+                const secondPreviousItemHeight = secondPreviousItem && secondPreviousItem?.keyForList ? itemHeights[secondPreviousItem.keyForList] : 0;
+                viewOffsetToKeepFocusedItemInView = firstPreviousItemHeight + secondPreviousItemHeight;
+            }
+
+            listRef.current.scrollToLocation({sectionIndex, itemIndex, animated, viewOffset: variables.contentHeaderHeight - viewOffsetToKeepFocusedItemInView});
         },
 
         // eslint-disable-next-line react-compiler/react-compiler, react-hooks/exhaustive-deps
@@ -429,6 +443,19 @@ function BaseSelectionList<TItem extends ListItem>(
         </>
     );
 
+    const onItemLayout = (event: LayoutChangeEvent, itemKey: string | null | undefined) => {
+        const {height} = event.nativeEvent.layout;
+
+        if (!itemKey) {
+            return;
+        }
+        
+        setItemHeights((prevHeights) => ({
+            ...prevHeights,
+            [itemKey]: height,
+        }));
+    };
+
     const renderItem = ({item, index, section}: SectionListRenderItemInfo<TItem, SectionWithIndexOffset<TItem>>) => {
         const normalizedIndex = index + (section?.indexOffset ?? 0);
         const isDisabled = !!section.isDisabled || item.isDisabled;
@@ -444,7 +471,7 @@ function BaseSelectionList<TItem extends ListItem>(
         };
 
         return (
-            <>
+            <View onLayout={(event: LayoutChangeEvent) => onItemLayout(event, item.keyForList)}>
                 <ListItem
                     item={item}
                     isFocused={isItemFocused}
@@ -479,7 +506,7 @@ function BaseSelectionList<TItem extends ListItem>(
                     wrapperStyle={listItemWrapperStyle}
                 />
                 {item.footerContent && item.footerContent}
-            </>
+            </View>
         );
     };
 
